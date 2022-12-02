@@ -8,12 +8,19 @@ import qualified Data.Map as M
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 
-mkTokens :: (Ord a) => [a] -> [(a,Float)]
-mkTokens xs = M.toList (M.fromListWith (+) [(x,(1/(fromIntegral (length xs)))) | x <- xs])
+mkTokens :: (Ord a) => [a] -> [((a,a),Float)]
+mkTokens xs = M.toList (M.fromListWith (+) [(x,(1/(fromIntegral (length (xs))))) | x <- (zip xs (tail xs)) ] )
 
 listSum :: [Int] -> Int
 listSum [] = 0
 listSum (x:xs) = x + listSum xs
+
+mkChain :: [(T.Text,T.Text)] -> Int -> [T.Text] -> [T.Text]
+mkChain _ 1 chain = chain
+mkChain tokenList lc chain
+                        | ((filter (\tl -> (fst $ tl)==(last chain)) tokenList))==[]=( mkChain (filter (\tl -> (fst $ tl)/=(last chain)) tokenList) (lc-1) ( chain++[(fst $ tokenList!!0)] ) )
+                        | otherwise = mkChain (filter (\tl -> (fst $ tl)/=(last chain)) tokenList) (lc-1) ( chain++[snd $ (filter (\tl -> (fst $ tl)==(last chain)) tokenList)!!0 ] )
+
 
 main :: IO ()
 main = do
@@ -24,4 +31,4 @@ main = do
         let filesLen = map length (mkTokens <$> wordBag)
         let avgLen = listSum filesLen `div` length filesLen
         let sorted = sortBy (\(_,a) (_,b) -> compare b a) (mkTokens $ concat wordBag)
-        T.writeFile "out.txt" (T.unwords (map fst (take avgLen sorted)))
+        T.writeFile "out.txt" (T.unwords ( mkChain (map (fst) sorted) avgLen [( (snd $ fst $ head sorted) )] ))
