@@ -25,7 +25,7 @@ mkChain tokenList lc chain
                         | otherwise = mkChain (filter (\tl -> (fst $ tl)/=(last chain)) tokenList) (lc-1) ( chain++[snd $ (filter (\tl -> (fst $ tl)==(last chain)) tokenList)!!0 ] )
 
 fstWord :: [T.Text] -> T.Text
-fstWord wList = fst $ (sortBy (\(_,a) (_,b) -> compare b a) (mkWord $ concat $ map (\ln -> map (\x -> (T.words x)!!0) (T.lines ln)) wList))!!0
+fstWord wList = fst $ (sortBy (\(_,a) (_,b) -> compare b a) (mkWord $ concat $ map (\ln -> map (\x -> (T.words x)!!0) (filter (not . T.null) (T.lines ln))) wList))!!0
 
 main :: IO ()
 main = do
